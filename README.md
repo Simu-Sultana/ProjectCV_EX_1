@@ -1,6 +1,6 @@
 # Exercise 1 Solution – Box Detection
 
-This folder contains a complete solution for **Exercise 1.1** and material for **Exercise 1.2** from the FAU Computer Vision Project. The implementation follows the exercise sheet: load the `.mat` files, visualize the data, implement **RANSAC for planes**, detect the **floor**, detect the **top plane of the box**, keep the **largest connected component**, and estimate the **box dimensions** from the final result. The exercise requires a self-written RANSAC and explicitly says not to use a ready-made RANSAC implementation. The provided script does exactly that. fileciteturn1file0L26-L41
+This folder contains a complete solution for **Exercise 1.1** and material for **Exercise 1.2** from the FAU Computer Vision Project. The implementation follows the exercise sheet: load the `.mat` files, visualize the data, implement **RANSAC for planes**, detect the **floor**, detect the **top plane of the box**, keep the **largest connected component**, and estimate the **box dimensions** from the final result. The exercise requires a self-written RANSAC and explicitly says not to use a ready-made RANSAC implementation. The provided script does exactly that. 
 
 ## Files included
 
@@ -30,7 +30,7 @@ Install these if needed:
 pip install numpy scipy matplotlib
 ```
 
-The exercise sheet mentions `numpy`, `scipy`, `scikit-learn`, and `matplotlib` as useful libraries. This solution uses `numpy`, `scipy`, and `matplotlib`. It does **not** use scikit-learn for RANSAC, which matches the assignment requirement. fileciteturn1file0L7-L9 fileciteturn1file0L26-L41
+The exercise sheet mentions `numpy`, `scipy`, `scikit-learn`, and `matplotlib` as useful libraries. This solution uses `numpy`, `scipy`, and `matplotlib`. It does **not** use scikit-learn for RANSAC, which matches the assignment requirement. 
 
 ## How to run
 
@@ -72,13 +72,13 @@ The script uses a normalized plane representation:
 - Plane normal: `n`
 - Plane equation: `n · x = d`
 
-This is the same representation recommended by the exercise. fileciteturn1file0L33-L39
+This is the same representation recommended by the exercise.
 
 ### 2. Why batch RANSAC?
-The point cloud is fairly large, so evaluating one hypothesis after another can be slow. The assignment also says to use NumPy efficiently and avoid unnecessary loops. This solution therefore evaluates many RANSAC hypotheses in one batch using matrix operations. fileciteturn1file0L41-L46
+The point cloud is fairly large, so evaluating one hypothesis after another can be slow. The assignment also says to use NumPy efficiently and avoid unnecessary loops. This solution therefore evaluates many RANSAC hypotheses in one batch using matrix operations. 
 
 ### 3. Why connected components?
-The raw top-plane mask may still include points that lie on other planar regions. Keeping only the largest connected component usually removes these spurious regions and gives a clean box top. This follows the exercise statement directly. fileciteturn1file0L61-L67
+The raw top-plane mask may still include points that lie on other planar regions. Keeping only the largest connected component usually removes these spurious regions and gives a clean box top. This follows the exercise statement directly.
 
 ## Measured results for the provided examples
 
@@ -104,4 +104,4 @@ When you show this to the advisor, explain the flow like this:
 - Largest connected component → final box top
 - Plane distance + corners → dimensions
 
-That is exactly the pipeline asked for in the exercise sheet. fileciteturn1file0L26-L67
+
