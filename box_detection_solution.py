@@ -1,6 +1,8 @@
+#!/usr/bin/env python3
 """
-Exercise 1.1 / 1.2 (Box Detection)
-We have written down what this script does in order to convey an idea.
+Computer Vision Project, Summer 2026 - solution for Exercise 1.1 / 1.2 (Box Detection)
+
+What this script does:
 1. Loads all provided Kinect .mat examples
 2. Visualizes amplitude image, distance image, and a subsampled point cloud
 3. Implements plane fitting with a self-written RANSAC
@@ -10,12 +12,16 @@ We have written down what this script does in order to convey an idea.
 7. Extracts the largest connected component as the actual box top
 8. Estimates box height, length, and width
 9. Saves result figures and a JSON summary
+10. Saves an extra clean presentation-style visualization similar to the exercise sheet
 
 Usage:
     python box_detection_solution.py
 """
 from __future__ import annotations
-import os, json, math
+
+import os
+import json
+import math
 import numpy as np
 import scipy.io as sio
 import matplotlib.pyplot as plt
@@ -45,27 +51,7 @@ def ransac_plane(
     seed: int = 0,
     eval_points: int = 10000,
 ):
-    """Estimate a dominant plane with self-written RANSAC.
-
-    Parameters
-    ----------
-    points : (N, 3) array
-        Point cloud as 3D vectors.
-    threshold : float
-        Inlier threshold in meters.
-    max_iterations : int
-        Maximum number of RANSAC hypotheses.
-    batch_size : int
-        Number of hypotheses evaluated together.
-    seed : int
-        Random seed for reproducibility.
-    eval_points : int
-        Number of points used during the fast scoring stage.
-
-    Returns
-    -------
-    dict with plane parameters and masks.
-    """
+    """Estimate a dominant plane with self-written RANSAC."""
     rng = np.random.default_rng(seed)
 
     valid_mask = np.isfinite(points).all(axis=1) & (np.abs(points[:, 2]) > 1e-9)
@@ -261,6 +247,7 @@ def save_detection_visualization(example_idx, D, floor_mask, floor_mask_filtered
 
 
 def save_3d_visualization(example_idx, PC, floor_mask_filtered, top_mask_box, corners, out_dir):
+    """Original technical 3D scatter plot."""
     fig = plt.figure(figsize=(8, 6))
     ax = fig.add_subplot(111, projection="3d")
 
@@ -290,6 +277,59 @@ def save_3d_visualization(example_idx, PC, floor_mask_filtered, top_mask_box, co
     ax.legend(loc="best")
     plt.tight_layout()
     path = os.path.join(out_dir, f"example{example_idx}_3d.png")
+    plt.savefig(path, dpi=180, bbox_inches="tight")
+    plt.close(fig)
+
+
+def save_presentation_visualization(example_idx, PC, floor_mask_filtered, top_mask_box, corners, out_dir):
+    """
+    Clean presentation-style 2D visualization closer to the exercise-sheet style:
+    - floor in green
+    - box top in red
+    - top outline in cyan
+    - optional labels
+    """
+    H, W, _ = PC.shape
+
+    img = np.ones((H, W, 3), dtype=np.float32)
+    floor_color = np.array([0.60, 0.93, 0.45], dtype=np.float32)   # green
+    top_color = np.array([0.70, 0.00, 0.00], dtype=np.float32)     # red
+    edge_color = np.array([0.00, 0.95, 1.00], dtype=np.float32)    # cyan
+
+    img[floor_mask_filtered] = floor_color
+    img[top_mask_box] = top_color
+
+    fig, ax = plt.subplots(figsize=(7, 5))
+    ax.imshow(img, origin="upper")
+
+    # map 3D corners to nearest pixels on the top mask
+    top_coords = np.argwhere(top_mask_box)
+    top_pts = PC[top_mask_box]
+
+    corner_pixels = []
+    for c in corners:
+        d = np.linalg.norm(top_pts - c[None, :], axis=1)
+        idx = int(np.argmin(d))
+        r, col = top_coords[idx]
+        corner_pixels.append([col, r])
+
+    corner_pixels = np.array(corner_pixels, dtype=float)
+    cyc = np.vstack([corner_pixels, corner_pixels[0]])
+    ax.plot(cyc[:, 0], cyc[:, 1], color=edge_color, linewidth=2.5)
+
+    # simple labels similar to sample figure
+    cx = corner_pixels[:, 0].mean()
+    cy = corner_pixels[:, 1].mean()
+    ax.text(cx, cy - 35, "top", color="black", fontsize=9, ha="center")
+    ax.text(corner_pixels[:, 0].min() - 22, cy, "left", color="black", fontsize=9, ha="center")
+    ax.text(corner_pixels[:, 0].max() + 22, cy, "right", color="black", fontsize=9, ha="center")
+    ax.text(cx + 10, corner_pixels[:, 1].max() + 16, "bottom", color="black", fontsize=9, ha="center")
+
+    ax.set_title(f"Example {example_idx}: floor, box and box corners")
+    ax.axis("off")
+
+    plt.tight_layout()
+    path = os.path.join(out_dir, f"example{example_idx}_presentation.png")
     plt.savefig(path, dpi=180, bbox_inches="tight")
     plt.close(fig)
 
@@ -378,6 +418,15 @@ def solve_example(example_idx: int, input_dir: str, out_dir: str):
     )
 
     save_3d_visualization(
+        example_idx,
+        PC,
+        floor_mask_filtered,
+        top_mask_box,
+        corners,
+        out_dir,
+    )
+
+    save_presentation_visualization(
         example_idx,
         PC,
         floor_mask_filtered,
