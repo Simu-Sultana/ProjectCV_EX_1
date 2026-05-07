@@ -1,0 +1,6 @@
+data/
+*/data/
+*.CR3
+*.mat
+*.npy
+*.zip
